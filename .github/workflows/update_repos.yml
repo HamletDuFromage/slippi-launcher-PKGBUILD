@@ -9,9 +9,12 @@ on:
 jobs:
   update-repo:
     runs-on: ubuntu-latest
+    container: archlinux:latest
     steps:
-      - name: checkout repo content
-        uses: actions/checkout@v2
+      - name: install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S git binutils --noconfirm
 
       - name: setup python
         uses: actions/setup-python@v2
@@ -22,25 +25,27 @@ jobs:
         run: |
           pip install shyaml
 
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
       - name: update PKGBUILD
         run: |
-          git clone https://github.com/project-slippi/slippi-launcher
-          pushd slippi-launcher > /dev/null
-
+          git clone https://github.com/project-slippi/slippi-launcher /tmp/slippi-launcher
+          cd /tmp/slippi-launcher
           curl -L https://github.com/project-slippi/slippi-launcher/releases/latest/download/latest-linux.yml > latest-linux.yml
           TAGNAME="$(cat latest-linux.yml | shyaml get-value version)"
           SHA="$(echo -n $(cat latest-linux.yml | shyaml get-value sha512) | base64 --decode | hexdump -ve '1/1 "%.2x"')"
           git checkout --quiet "$(git rev-list -n 1 v$TAGNAME)"
           PKGVER="$(git describe --long --tags | sed -e 's/-\([^-]*-g[^-]*\)$/-r\1/' -e 's/-/./g')"
+          cd -
 
-          sed -i "/_tagname=/c\_tagname=\'$TAGNAME\'" ./../PKGBUILD
-          sed -i "/pkgver=/c\pkgver=\'$PKGVER\'" ./../PKGBUILD
-          sed -i "/pkgver =/c\	pkgver = $PKGVER" ./../.SRCINFO
-          sed -i "/sha512sums=/c\sha512sums=(\'$SHA\')" ./../PKGBUILD
-          sed -i "/sha512sums =/c\	sha512sums = $SHA" ./../.SRCINFO
-          sed -i "/source =/c\	source = Slippi-Launcher-$TAGNAME-x86_64.AppImage::git+https://github.com/project-slippi/slippi-launcher.git#tag=v$TAGNAME" ./../.SRCINFO
+          sed -i "/_tagname=/c\_tagname=\'$TAGNAME\'" ./PKGBUILD
+          sed -i "/pkgver=/c\pkgver=\'$PKGVER\'" ./PKGBUILD
+          sed -i "/sha512sums=/c\sha512sums=(\'$SHA\')" ./PKGBUILD
 
-          popd > /dev/null
+          chown -R homlet:homlet .
+          su -c "makepkg --printsrcinfo > .SRCINFO" homlet
+          chown -R root:root .
 
       - name: push changes to repo
         run: |
