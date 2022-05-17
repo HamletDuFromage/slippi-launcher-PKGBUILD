@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: install dependencies
         run: |
+          pacman -Sy
           pacman -S git binutils python python-pip --noconfirm
 
       - name: install required python modules
