@@ -14,7 +14,7 @@ jobs:
       - name: install dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S git binutils --noconfirm
+          pacman -S git binutils python --noconfirm
 
       - name: setup python
         uses: actions/setup-python@v2
