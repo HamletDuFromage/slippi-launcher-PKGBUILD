@@ -16,12 +16,16 @@ jobs:
           pacman -Syu --noconfirm
           pacman -S git binutils python python-pip --noconfirm
 
-      - name: install dependencies
+      - name: install required python modules
         run: |
           pip install shyaml
 
       - name: checkout repo content
         uses: actions/checkout@v2
+
+      - name: create user
+        run: |
+          useradd -m homlet
 
       - name: update PKGBUILD
         run: |
