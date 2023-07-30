@@ -19,6 +19,7 @@ jobs:
       - name: install required python modules
         run: |
           pipx install shyaml
+          export PATH="/github/home/.local/bin:$PATH"
 
       - name: checkout repo content
         uses: actions/checkout@v2
