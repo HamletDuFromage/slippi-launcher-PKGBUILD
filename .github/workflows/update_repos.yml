@@ -14,7 +14,7 @@ jobs:
       - name: install dependencies
         run: |
           pacman -Syyu --noconfirm
-          pacman -S git binutils python python-pip openssl openssl-1.1 python-pipx --noconfirm
+          pacman -S git binutils python python-pip openssl python-pipx --noconfirm
 
       - name: install required python modules
         run: |
